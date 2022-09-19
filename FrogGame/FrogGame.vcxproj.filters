@@ -15,7 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\FishProject\FishProject\main.cpp">
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="font.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Arkanoid\Arkanoid\아카노이드.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

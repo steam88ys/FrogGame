@@ -1,71 +1,41 @@
 #include <SFML/Graphics.hpp>
-#include <iostream>
+#include <string>
+#include <exception>
 
-using namespace std;
 using namespace sf;
-// https://maincodes.tistory.com/49
 
-// Text 설정 함수
-int textPrint(Text& textMsg, Font& font, int size, float x, float y, const Color& color, const Color& outColor, string p)
+int main(void)
 {
-	textMsg.setFont(font);
-	textMsg.setCharacterSize(size);
-	textMsg.setPosition(x, y);
-	textMsg.setFillColor(color);
-	textMsg.setOutlineColor(outColor);
-	textMsg.setOutlineThickness(1.f);
-	textMsg.setString(p);
+    // main window 생성
+    RenderWindow window(VideoMode(400, 300), "SFML window");
 
-	return 0;
-}
+    // 쓸 폰트 생성
+    Font font;
+    if (!font.loadFromFile(R"(E:\CPP\FrogGame\font\DS-DIGIB.TTF)"))
+        throw std::exception("font error");
 
-int main()
-{
-	Text text1, text2, text3;
-	Uint8 r = 0, g = 0, b = 0;
-	string msgStr = "!Frog Game!";
-	int x = 0, y = 0;
 
-	Clock clock;
-	float interval = 0;
+    // 화면에 쓸 내용
+    Text text("Frog Game", font, 50);   // 변수에 들어있는 내용 쓰는 법
+    text.setFillColor(Color::White); //글씨 색깔
 
-	cout << "프로그램이 시작되었습니다." << endl;
+    // 윈도우 루프 시작
+    while (window.isOpen())
+    {
+        Event event;
 
-	RenderWindow app(VideoMode(504, 504), "https://maincodes.tistory.com/");
-	app.setFramerateLimit(60);
+        // 종료 여부 체크
+        while (window.pollEvent(event))
+            if (event.type == Event::Closed)
+                window.close();
 
-	Font font;
-	font.loadFromFile("resources/DS-DIGIB.ttf");
-	// 폰트 저장 위치 모르겠음
+        // 화면 청소
+        window.clear();
 
-	textPrint(text1, font, 30, 0, 0,
-		Color::Yellow, Color::White,
-		msgStr);
+        // 화면에 글씨 쓰기
+        window.draw(text);
 
-	textPrint(text2, font, 100, 0, 0,
-		Color::White, Color::White,
-		msgStr);
-
-	textPrint(text3, font, 150, 0, 0,
-		Color::Blue, Color::White,
-		msgStr);
-
-	while (app.isOpen())
-	{
-		float time = clock.getElapsedTime().asSeconds();
-		clock.restart();
-
-		interval += time;
-
-		Event event;
-
-		while (app.pollEvent(event))
-		{
-			if (event.type == Event::EventType::Closed)
-			{
-				app.close();
-				cout << "프로그램이 종료되었습니다." << endl;
-			}
-		}
-	}
+        // 띄우기
+        window.display();
+    }
 }

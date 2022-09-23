@@ -16,12 +16,12 @@ int main(void)
     RenderWindow app(VideoMode(1000, 700), "FrogGame");
     app.setFramerateLimit(60);
 
-    /*Texture t1, t2, t3, t4;
-    * t1.loadFromFile("images/background.jpg");
+    Texture t1, t2;
+    t1.loadFromFile("images/background.jpg");
     t2.loadFromFile("images/frog.png");
 
     Sprite Background(t1), Frog(t2);
-    Frog.setPosition(300, 400);*/
+    Frog.setPosition(300, 400);
 
     time_t start, end;
     double result;

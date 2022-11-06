@@ -5,7 +5,7 @@ using namespace sf;
 using namespace std;
 
 #define WIDTH 800        //가로
-#define HEIGHT 850        //세로
+#define HEIGHT 850       //세로
 #define BAR_COUNT 10    //밟는 bar 개수
 static const float GRAVITY = 0.2f;    //중력
 
@@ -20,7 +20,7 @@ private:
     float dy;
     Sprite* imgJump;
     Sprite* imgReady;
-    Texture t1,t2,bg;
+    Texture t1,t2;
     bool jumpFlag;
 private:
     const Sprite& GetImg()
@@ -41,7 +41,6 @@ public:
         x = static_cast<int>(WIDTH / 2);
         y = static_cast<int>(HEIGHT / 2);
 
-        bg.loadFromFile("images/background.jpg");
         t1.loadFromFile("images/frog2.png");
         t2.loadFromFile("images/frog.png");
 
@@ -65,21 +64,15 @@ public:
     void Move()
     {
         if (Keyboard::isKeyPressed(Keyboard::Right)) //오른쪽이동
-        {
-            x += 4;
-        }
+        {   x += 4; }
         if (Keyboard::isKeyPressed(Keyboard::Left)) //왼쪽이동
-        {
-            x -= 4;
-        }
-        if (x <= 0)    //왼쪽 벽 뚫지 못하게
-        {
-            x = 0;
-        }
-        if (x >= WIDTH - imgWidth)    //오른쪽 벽 뚫지 못하게
-        {
-            x = WIDTH - imgWidth;
-        }
+        {   x -= 4; }
+
+        
+        if (x <= 0)                 //왼쪽 벽 뚫지 못하게
+        {   x = 0;  }                              
+        if (x >= WIDTH - imgWidth)  //오른쪽 벽 뚫지 못하게
+        {   x = WIDTH - imgWidth;}   
 
         jumpFlag = true;
         dy += GRAVITY;
@@ -225,6 +218,10 @@ int main(void)
     Player* pPlayer = new Player();
     Bar* pBar = new Bar();
 
+    Texture bg;
+    bg.loadFromFile("images/background.jpg");
+    Sprite Background(bg);
+
     while (window.isOpen())
     {
         Event e;
@@ -243,6 +240,7 @@ int main(void)
 
         //draw
         window.clear(Color::White);
+        window.draw(Background);
         pPlayer->Draw(window);
         pBar->Draw(window);
         window.display();

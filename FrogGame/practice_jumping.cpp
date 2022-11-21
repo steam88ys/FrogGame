@@ -1,6 +1,8 @@
 #include<SFML/Graphics.hpp>
 #include<ctime>
 #include<vector>
+#include <iostream>
+
 using namespace sf;
 using namespace std;
 
@@ -17,6 +19,7 @@ private:
     int y;
     int imgWidth;
     int imgHeight;
+    float speed = 1;    // 속도
     float dy;
     Sprite* imgJump;
     Sprite* imgReady;
@@ -63,16 +66,16 @@ public:
     }
     void Move()
     {
+
         if (Keyboard::isKeyPressed(Keyboard::Right)) //오른쪽이동
         {   x += 4; }
         if (Keyboard::isKeyPressed(Keyboard::Left)) //왼쪽이동
         {   x -= 4; }
-
         
         if (x <= 0)                 //왼쪽 벽 뚫지 못하게
         {   x = 0;  }                              
         if (x >= WIDTH - imgWidth)  //오른쪽 벽 뚫지 못하게
-        {   x = WIDTH - imgWidth;}   
+        {   x = WIDTH - imgWidth;}  
 
         jumpFlag = true;
         dy += GRAVITY;
@@ -85,9 +88,25 @@ public:
         }
 
     }
+
     void Draw(RenderWindow& window)
     {
         window.draw(GetImg());
+    }
+
+    void DrawGameOver(RenderWindow& window)
+    {
+        // 화면에 게임 오버 폰트 띄우기
+        Font font;
+        if (!font.loadFromFile(R"(E:\CPP\FrogGame\font\DS-DIGIB.TTF)"))
+            throw std::exception("font error");
+
+        // 화면에 쓸 내용
+        Text text("GameOver", font, 100);   
+        text.setFillColor(Color::Red); //글씨 색깔
+
+        // 화면에 글씨 쓰기
+        window.draw(text);
     }
 
     float GetDy() const
@@ -117,7 +136,12 @@ public:
     void Jump()
     {
         jumpFlag = false;
-        dy = -10;
+        dy = -11*speed;
+    }
+    void Speed()
+    {
+        speed = 0;
+        Jump();
     }
 };
 
@@ -138,13 +162,13 @@ public:
     Bar()
     {
         srand(static_cast<unsigned int>(time(nullptr)));
-
+        
         t.loadFromFile("images/wood.png");
         imgBar = new Sprite(t);
 
         imgWidth = imgBar->getTexture()->getSize().x;
 
-        for (int i = 0; i < BAR_COUNT; ++i)
+        for (int i = 0; i < BAR_COUNT; ++i) // 통나무 위치 랜덤 생성
         {
             Pos p;
             p.x = rand() % WIDTH - imgWidth / 2;
@@ -161,7 +185,7 @@ public:
 
     void Draw(RenderWindow& window)
     {
-        for (int i = 0; i < BAR_COUNT; ++i)
+        for (int i = 0; i < BAR_COUNT; ++i) // 통나무 화면에 띄우기
         {
             imgBar->setPosition(vBar[i].x, vBar[i].y);
             window.draw(*imgBar);
@@ -177,7 +201,7 @@ public:
 
         for (int i = 0; i < BAR_COUNT; ++i)
         {
-            if (pPlayer->GetDy() > 0
+            if (pPlayer->GetDy() > 0        // 점프가 가능한 상황
                 && pPlayer->GetX() + pPlayer->GetWidth() > vBar[i].x
                 && pPlayer->GetX() < vBar[i].x + imgWidth
                 && pPlayer->GetY() + pPlayer->GetHeight() > vBar[i].y
@@ -189,6 +213,7 @@ public:
         }
         return false;
     }
+
     void MoveAndReset(Player* pPlayer)
     {
         static const int limit = HEIGHT / 3;
@@ -198,9 +223,9 @@ public:
             {
                 pPlayer->SetY(limit);
                 vBar[i].y -= static_cast<int>(pPlayer->GetDy());
-                if (vBar[i].y > HEIGHT + 10)
+                if (vBar[i].y > HEIGHT + 10)    // 통나무 움직이기
                 {
-                    vBar[i].y = rand() % HEIGHT / 3 + 100;
+                    vBar[i].y = rand() % HEIGHT / 4 + 100;
                     vBar[i].x = rand() % WIDTH;
                 }
             }
@@ -221,7 +246,7 @@ int main(void)
     Texture bg;
     bg.loadFromFile("images/background.jpg");
     Sprite Background(bg);
-
+    
     while (window.isOpen())
     {
         Event e;
@@ -232,6 +257,8 @@ int main(void)
                 window.close();
             }
         }
+
+
         //logic
         pPlayer->Move();
         pBar->MoveAndReset(pPlayer);
@@ -243,10 +270,16 @@ int main(void)
         window.draw(Background);
         pPlayer->Draw(window);
         pBar->Draw(window);
+        if (pPlayer->GetY() >= 700) {   // 개구리가 바닥에 닿았을 때
+            pPlayer->Speed();   // speed를 0으로
+            pPlayer->DrawGameOver(window);
+        }   // TODO: 게임 오버하면 화면 멈추게 하기
         window.display();
+
     }
 
     delete(pBar);
     delete(pPlayer);
+
     return 0;
 }

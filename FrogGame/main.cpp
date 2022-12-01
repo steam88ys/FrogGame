@@ -1,98 +1,335 @@
-#include <SFML/Graphics.hpp>
-#include <stdio.h>
-#include <time.h>
-#include <Windows.h>
+#include<SFML/Graphics.hpp>
+#include<ctime>
+#include<vector>
 #include <iostream>
-
-#define WIDTH 800
-#define HEIGHT 850
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib,"winmm.lib")
 
 using namespace sf;
+using namespace std;
 
-// 충돌여부 확인 (사각충돌)
-bool isCollide(Sprite s1, Sprite s2);
+
+#define WIDTH 800       //가로
+#define HEIGHT 850      //세로
+#define BAR_COUNT 10    //발판 개수
+
+int score = 0;  // 게임 스코어
+static const float GRAVITY = 0.2f;    //중력
+
+
+//플래이어 클래스
+class Player
+{
+private:
+    int x;
+    int y;
+    int imgWidth;
+    int imgHeight;
+    float speed = 1;    // 속도
+    float dy;
+    Sprite* imgJump;
+    Sprite* imgReady;
+    Texture t1, t2;
+    bool jumpFlag;
+    const Sprite& GetImg()
+    {
+        if (jumpFlag)
+        {
+            return *imgJump;
+        }
+        else
+        {
+            return *imgReady;
+        }
+    }
+
+public:
+    Player() : dy(0), jumpFlag(true)
+    {
+        x = static_cast<int>(WIDTH / 2);
+        y = static_cast<int>(HEIGHT / 2);
+
+        t1.loadFromFile("images/frog2.png");
+        t2.loadFromFile("images/frog.png");
+
+        imgJump = new Sprite(t1);
+        imgReady = new Sprite(t2);
+
+        imgWidth = static_cast<int>(imgReady->getTexture()->getSize().x);
+        imgHeight = static_cast<int>(imgReady->getTexture()->getSize().y);
+    }
+    ~Player()
+    {
+        delete(imgJump);
+        delete(imgReady);
+    }
+
+    void SetPosition()
+    {
+        imgReady->setPosition(x, y);
+        imgJump->setPosition(x, y);
+    }
+
+    void Move()
+    {
+
+        if (Keyboard::isKeyPressed(Keyboard::Right)) //오른쪽이동
+        {
+            x += (4 * speed);
+        }
+        if (Keyboard::isKeyPressed(Keyboard::Left)) //왼쪽이동
+        {
+            x -= (4 * speed);
+        }
+
+        if (x <= 0)                 //왼쪽 벽 뚫지 못하게
+        {
+            x = 0;
+        }
+        if (x >= WIDTH - imgWidth)  //오른쪽 벽 뚫지 못하게
+        {
+            x = WIDTH - imgWidth;
+        }
+
+        jumpFlag = true;
+        dy += GRAVITY;
+        y += static_cast<int>(dy);
+
+        if (y > HEIGHT - imgHeight) // 창 높이를 넘어가지 않게
+        {
+            jumpFlag = false;
+            dy = -10;
+            score += 10;
+        }
+
+    }
+
+    
+    void Draw(RenderWindow& window)
+    {
+        /* 점수 출력 */
+        Font font;
+        if (!font.loadFromFile(R"(E:\CPP\FrogGame\font\DS-DIGIB.TTF)"))
+            throw std::exception("font error");
+
+        String str = to_string(score);
+        Text text("\n  Score: " + str, font, 30);
+        text.setFillColor(Color::White);
+
+        window.draw(text);
+
+        window.draw(GetImg());
+    }
+
+
+    void DrawGameOver(RenderWindow& window)
+    {
+
+        /* 게임오버 메시지 출력 */
+        Font font;
+        if (!font.loadFromFile(R"(E:\CPP\FrogGame\font\DS-DIGIB.TTF)"))
+            throw std::exception("font error");
+        Text text("\n\n   GameOver", font, 140);
+        text.setFillColor(Color::Red);
+
+        window.draw(text);
+      
+    }
+
+    float GetDy() const
+    {
+        return dy;
+    }
+    int GetY() const
+    {
+        return y;
+    }
+    int GetX() const
+    {
+        return x;
+    }
+    int GetWidth() const
+    {
+        return imgWidth;
+    }
+    int GetHeight() const
+    {
+        return imgHeight;
+    }
+    void SetY(int _y)
+    {
+        y = _y;
+    }
+    void Jump()         // 점프하기
+    {
+        jumpFlag = false;
+        dy = -11;
+    }
+    void StopJump()     // 점프 멈추기
+    {
+        speed = 0; 
+        jumpFlag = false;
+        dy = -11*speed;
+    }
+};
+
+
+
+//점프 bar 클래스
+class Bar
+{
+private:
+    struct Pos
+    {
+        int x;
+        int y;
+        int count;  // 밟은 횟수 체크
+    };
+    vector<Pos> vBar;
+    Sprite* imgBar;
+    Texture t;
+    int imgWidth;
+
+public:
+    Bar()
+    {
+        srand(static_cast<unsigned int>(time(nullptr)));
+
+        t.loadFromFile("images/wood.png");
+        imgBar = new Sprite(t);
+
+        imgWidth = imgBar->getTexture()->getSize().x;
+
+        for (int i = 0; i < BAR_COUNT; ++i) // 발판 위치 랜덤 생성
+        {
+            Pos p;
+            p.x = rand() % WIDTH - imgWidth / 2;    // 발판 가로 겹치지 않는 랜덤 위치
+            p.y = rand() % HEIGHT;                  // 발판 높이 랜덤 위치
+            vBar.push_back(p);
+        }
+
+        vBar[0].y = HEIGHT - 200;   // 맨 밑 발판 y좌표 설정
+    }
+    ~Bar()  // 발판 소멸
+    {
+        delete(imgBar);
+    }
+
+
+    void Draw(RenderWindow& window) // 발판 그리기
+    {
+        for (int i = 0; i < BAR_COUNT; ++i)
+        {
+            imgBar->setPosition(vBar[i].x, vBar[i].y);
+            window.draw(*imgBar);
+        }
+    }
+
+
+    bool CheckCollision(Player* pPlayer)
+    {
+        //null check
+        if (pPlayer == nullptr)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < BAR_COUNT; ++i)
+        {                                   // 개구리가 점프하는 경우
+            if (pPlayer->GetDy() > 0        // 개구리 발판에 닿을 때
+                && pPlayer->GetX() + pPlayer->GetWidth() > vBar[i].x    // 개구리의 x좌표 + 개구리의 넓이 > 발판 이미지 왼쪽 좌표
+                && pPlayer->GetX() < vBar[i].x + imgWidth   // 개구리의 x좌표 + 개구리의 넓이 < 발판 이미지 오른쪽 좌표
+                && pPlayer->GetY() + pPlayer->GetHeight() > vBar[i].y   // 개구리의 y좌표 + 현재 높이 > 발판 아래쪽 y좌표
+                && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + 10) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표
+            {
+                pPlayer->Jump();
+
+                //vBar[i].count++;
+                //printf("%d", vBar[i].count);
+                //if (vBar[i].count == 1) {
+                //  score += 10;// *** 같은 발판 밟았을 때 체크 해야 됨 ***
+                //}
+
+                score += 10;
+                
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void MoveAndReset(Player* pPlayer)
+    {
+        static const int limit = HEIGHT / 3;    // limit : 화면 높이의 3분의 1
+        if (pPlayer->GetY() < limit)    // 개구리의 현재 위치가 limit보다 작을 때
+        {
+            for (int i = 0; i < BAR_COUNT; ++i)
+            {
+                pPlayer->SetY(limit);   // 개구리를 limit 위치로 되돌림
+                vBar[i].y -= static_cast<int>(pPlayer->GetDy());
+                if (vBar[i].y > HEIGHT + 10)    //발판의 y좌표가 한 화면에 보다 높이 올라갈 때
+                {
+                    vBar[i].y = rand() % HEIGHT / 4 + 100;  // 최소 단차 100 
+                    vBar[i].x = rand() % WIDTH;
+                }
+            }
+        }
+    }
+
+};
+
+
 
 int main(void)
 {
-	// 윈도우 창 생성
-	RenderWindow app(VideoMode(WIDTH, HEIGHT), "FrogGame");
-	app.setFramerateLimit(60);
 
-	Texture t1, t2, t3, t4;
-	t1.loadFromFile("images/background.jpg");	// 배경화면 이미지
-	t2.loadFromFile("images/frog.png");			// 개구리 이미지
-	t3.loadFromFile("images/wood.png");			// 발판 이미지
-	t4.loadFromFile("images/fly.png");			// 장애물 이미지
+    RenderWindow window(VideoMode(WIDTH, HEIGHT), "Frog Game");
+    window.setFramerateLimit(60);
 
-	Sprite Background(t1), Frog(t2), Wood(t3), Fly(t4);
-	Frog.setPosition(300, 400);
+    //setting
+    Player* pPlayer = new Player();
+    Bar* pBar = new Bar();
 
-	// 통나무 랜덤 위치로 생성하기 getPosition radom
-	Wood.setPosition( (rand()*(300-0)+300), (rand() * (400 - 0) + 400));
-	// 0~100		0~300
+    Texture bg;
+    bg.loadFromFile("images/background.jpg");
+    Sprite Background(bg);
 
+    PlaySound(TEXT("Calimba-E_s-Jammy-Jams.wav"), NULL, SND_ASYNC | SND_LOOP);    // 음악 반복 재생
 
-	float dx = 5.0f, dy = 6.0f;	// (속도 조절 + 각도 조절)
+    while (window.isOpen())
+    {
+        Event e;
+        if (window.pollEvent(e))
+        {
+            if (e.type == Event::Closed)
+            {
+                window.close();
+            }
+        }
 
-	while (app.isOpen())
-	{
-		Event e;
-		while (app.pollEvent(e))
-		{
-			if (e.type == Event::Closed)
-				app.close();
-		}
+        //logic
+        pPlayer->Move();
+        pBar->MoveAndReset(pPlayer);
+        pBar->CheckCollision(pPlayer);
+        pPlayer->SetPosition();
 
-		// 개구리 위치(좌표)
-		Vector2f b = Frog.getPosition();	// x, y좌표 값 받아냄		setPosition
+        //draw
+        window.clear(Color::White);
+        window.draw(Background);
+        pPlayer->Draw(window);
+        pBar->Draw(window);
 
-		// 키보드에 따라 개구리가 움직임
-		if (Keyboard::isKeyPressed(Keyboard::Right))
-			Frog.move(9.0f, 0.0f);
-		if (Keyboard::isKeyPressed(Keyboard::Left))
-			Frog.move(-9.0f, 0.0f);
+        if (pPlayer->GetY() > 730) {   // 개구리가 바닥에 닿았을 때
+            pPlayer->StopJump();   // speed를 0으로
+            pPlayer->DrawGameOver(window);
+        }
+        window.display();
 
-		float gravity= (-18);	// 중력
-		float acc = 1;	// 가속도
-		
-		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::Space))
-		{
+    }
 
-			while (b.y > 0)
-			{
-				gravity += (acc*=3);
-				Frog.move(0.0f, gravity);
-			}
+    delete(pBar);
+    delete(pPlayer);
 
-			// 천천히 내려오게 하고 싶음 (끝까지 내려오게 해야함) -> 지금은 제자리
-
-			// 내려가는 값이 계속 변해야함 (중력, 떨어지는 정도를 변수로 처리)
-			// 값 변하는거 출력하면서 보기
-		}
-
-		if (b.x <= 0)    //왼쪽 벽 뚫지 못하게
-		{
-			Frog.move(9.0f, 0.0f);
-		}
-		if (b.x >= WIDTH - 100)    //오른쪽 벽 뚫지 못하게
-		{
-			Frog.move(-9.0f, 0.0f);
-		}
-
-		// 배경 위 아래로 스크롤	참고: https://oneday0012.tistory.com/16
-
-
-		// 밑에 통나무를 만날 때 까지
-		// 밑에 아무것도 없으면 엔딩 화면 띄우기
-
-
-		app.clear();
-		app.draw(Background);
-		app.draw(Frog);
-		app.draw(Wood);
-		//app.draw(Fly);
-		app.display();
-	}
-
-	return 0;
+    return 0;
 }

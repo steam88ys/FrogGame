@@ -34,7 +34,7 @@ private:
     bool jumpFlag;
     const Sprite& GetImg()
     {
-        if (jumpFlag)      // true일 때 점프, false일 때 점프 준비 이미지
+        if (jumpFlag)
         {
             return *imgJump;
         }
@@ -104,7 +104,7 @@ public:
 
     }
 
-    
+
     void Draw(RenderWindow& window)
     {
         /* 점수 출력 */
@@ -134,7 +134,7 @@ public:
         text.setFillColor(Color::Red);
 
         window.draw(text);
-      
+
     }
 
     float GetDy() const
@@ -168,8 +168,8 @@ public:
     }
     void StopJump()     // 점프 멈추기
     {
-        speed = 0; 
-        dy = -11*speed;
+        speed = 0;
+        dy = -11 * speed;
     }
 };
 
@@ -183,7 +183,7 @@ private:
     {
         int x;
         int y;
-        int count = 0;  // 밟은 횟수 체크
+        int count;  // 밟은 횟수 체크
     };
     vector<Pos> vBar;
     Sprite* imgBar;
@@ -240,18 +240,18 @@ public:
                 && pPlayer->GetX() + pPlayer->GetWidth() > vBar[i].x    // 개구리의 x좌표 + 개구리의 넓이 > 발판 이미지 왼쪽 좌표
                 && pPlayer->GetX() < vBar[i].x + imgWidth   // 개구리의 x좌표 + 개구리의 넓이 < 발판 이미지 오른쪽 좌표
                 && pPlayer->GetY() + pPlayer->GetHeight() > vBar[i].y   // 개구리의 y좌표 + 현재 높이 > 발판 아래쪽 y좌표
-                && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + 10) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표 + 10
-                // 10 변수로 바꾸기
+                && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + 10) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표
             {
                 pPlayer->Jump();
 
-                // 점프 효과음
-                vBar[i].count++;    // 초기화 하기
-                printf("%d", vBar[i].count);
-                if (vBar[i].count == 1) {
-                  score += 10;// *** 같은 발판 밟았을 때 체크 해야 됨 ***
-                }
-                
+                //vBar[i].count++;
+                //printf("%d", vBar[i].count);
+                //if (vBar[i].count == 1) {
+                //  score += 10;// *** 같은 발판 밟았을 때 체크 해야 됨 ***
+                //}
+
+                score += 10;
+
                 return true;
             }
         }

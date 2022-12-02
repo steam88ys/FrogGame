@@ -11,10 +11,11 @@ using namespace std;
 
 
 #define WIDTH 800       //가로
-#define HEIGHT 820      //세로
+#define HEIGHT 850      //세로
 #define BAR_COUNT 8    //발판 개수
 
 int score = 0;  // 게임 스코어
+int level = 1;  // 게임 레벨
 static const float GRAVITY = 0.2f;    //중력
 
 
@@ -112,8 +113,9 @@ public:
         if (!font.loadFromFile(R"(E:\CPP\FrogGame\font\DS-DIGIB.TTF)"))
             throw std::exception("font error");
 
-        String str = to_string(score);
-        Text text("\n  Score: " + str, font, 30);
+        String str1 = to_string(score);
+        String str2 = to_string(level);
+        Text text("\n  Score: " + str1+"\n  Level: "+str2, font, 30);
         text.setFillColor(Color::White);
 
         window.draw(text);
@@ -165,7 +167,13 @@ public:
     {
         jumpFlag = false;
         dy = -11;
+        PlaySound(TEXT("jumping_sound.wav"), NULL, SND_ASYNC);
     }
+    //void LevelUp()     // 레벨업
+    //{
+    //    speed = 1.3;
+    //    dy = -11 * speed;
+    //}
     void StopJump()     // 점프 멈추기
     {
         speed = 0; 
@@ -183,12 +191,15 @@ private:
     {
         int x;
         int y;
+        int pspeed = 0;
         int count = 0;  // 밟은 횟수 체크
     };
+
     vector<Pos> vBar;
     Sprite* imgBar;
     Texture t;
     int imgWidth;
+    int imgHeight;
 
 public:
     Bar()
@@ -199,6 +210,7 @@ public:
         imgBar = new Sprite(t);
 
         imgWidth = imgBar->getTexture()->getSize().x;
+        imgHeight = imgBar->getTexture()->getSize().y;
 
         for (int i = 0; i < BAR_COUNT; ++i) // 발판 위치 랜덤 생성
         {
@@ -240,16 +252,25 @@ public:
                 && pPlayer->GetX() + pPlayer->GetWidth() > vBar[i].x    // 개구리의 x좌표 + 개구리의 넓이 > 발판 이미지 왼쪽 좌표
                 && pPlayer->GetX() < vBar[i].x + imgWidth   // 개구리의 x좌표 + 개구리의 넓이 < 발판 이미지 오른쪽 좌표
                 && pPlayer->GetY() + pPlayer->GetHeight() > vBar[i].y   // 개구리의 y좌표 + 현재 높이 > 발판 아래쪽 y좌표
-                && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + 10) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표 + 10
-                // 10 변수로 바꾸기
+                && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + imgHeight) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표 + 10
             {
                 pPlayer->Jump();
 
+                /*if (score >= 20) 
+                {
+                    pPlayer->LevelUp();
+                }*/
+
                 // 점프 효과음
-                vBar[i].count++;    // 초기화 하기
-                printf("%d", vBar[i].count);
-                if (vBar[i].count == 1) {
-                  score += 10;// *** 같은 발판 밟았을 때 체크 해야 됨 ***
+                vBar[i].count++;
+                if (vBar[i].count == 1) {   // 같은 발판 밟았을 때
+                  score += 10;
+                }
+
+                // 스코어 계산
+                if (score != 0 && score % 100 == 0)
+                {
+                    level++;
                 }
                 
                 return true;
@@ -294,8 +315,6 @@ int main(void)
     bg.loadFromFile("images/background.jpg");
     Sprite Background(bg);
 
-    PlaySound(TEXT("Calimba-E_s-Jammy-Jams.wav"), NULL, SND_ASYNC | SND_LOOP);    // 음악 반복 재생
-
     while (window.isOpen())
     {
         Event e;
@@ -319,7 +338,7 @@ int main(void)
         pPlayer->Draw(window);
         pBar->Draw(window);
 
-        if (pPlayer->GetY() > 700) {   // 개구리가 바닥에 닿았을 때
+        if (pPlayer->GetY() > 720) {   // 개구리가 바닥에 닿았을 때
             pPlayer->StopJump();   // speed를 0으로
             pPlayer->DrawGameOver(window);
         }

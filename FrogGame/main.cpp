@@ -12,11 +12,11 @@ using namespace std;
 
 #define WIDTH 800       //가로
 #define HEIGHT 850      //세로
-#define BAR_COUNT 8    //발판 개수
+#define BAR_COUNT 10    //발판 개수
 
 int score = 0;  // 게임 스코어
 int level = 1;  // 게임 레벨
-static const float GRAVITY = 0.2f;    //중력
+float GRAVITY = 0.2f;    //중력
 
 
 //플래이어 클래스
@@ -42,6 +42,9 @@ private:
         else
         {
             return *imgReady;
+            // 지연시키는 코드
+            // 점프 상태가 a초 이상일 때
+            // 바닥에 돌아면 a를 0으로 초기화
         }
     }
 
@@ -165,15 +168,14 @@ public:
     }
     void Jump()         // 점프하기
     {
-        jumpFlag = false;
-        dy = -11;
+        dy = -11*speed;
         PlaySound(TEXT("jumping_sound.wav"), NULL, SND_ASYNC);
     }
-    //void LevelUp()     // 레벨업
-    //{
-    //    speed = 1.3;
-    //    dy = -11 * speed;
-    //}
+    void LevelUp()     // 레벨업 (움직임 빨라지고, 점프 후 더 빨리 떨어짐)
+    {
+        speed += 0.05f;
+        GRAVITY += 0.04f;
+    }
     void StopJump()     // 점프 멈추기
     {
         speed = 0; 
@@ -220,7 +222,7 @@ public:
             vBar.push_back(p);
         }
 
-        vBar[0].y = HEIGHT - 200;   // 맨 밑 발판 y좌표 설정
+        vBar[0].y = HEIGHT - 200;   // 처음 발판 y좌표 설정
     }
     ~Bar()  // 발판 소멸
     {
@@ -237,7 +239,7 @@ public:
         }
     }
 
-
+    // 충돌 체크 후 점프 (착지, 스코어, 레벨 기능)
     bool CheckCollision(Player* pPlayer)
     {
         //null check
@@ -254,23 +256,20 @@ public:
                 && pPlayer->GetY() + pPlayer->GetHeight() > vBar[i].y   // 개구리의 y좌표 + 현재 높이 > 발판 아래쪽 y좌표
                 && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + imgHeight) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표 + 10
             {
+                // 시간 지연
+                Sleep(40);
                 pPlayer->Jump();
 
-                /*if (score >= 20) 
-                {
-                    pPlayer->LevelUp();
-                }*/
-
-                // 점프 효과음
                 vBar[i].count++;
                 if (vBar[i].count == 1) {   // 같은 발판 밟았을 때
                   score += 10;
-                }
 
-                // 스코어 계산
-                if (score != 0 && score % 100 == 0)
-                {
-                    level++;
+                  // 스코어 계산
+                  if (score != 0 && score % 50 == 0)
+                  {
+                      level++;
+                      pPlayer->LevelUp();
+                  }
                 }
                 
                 return true;
@@ -279,6 +278,7 @@ public:
         return false;
     }
 
+    // 개구리가 점프 가능한 범위 지정
     void MoveAndReset(Player* pPlayer)
     {
         static const int limit = HEIGHT / 3;    // limit : 화면 높이의 3분의 1

@@ -12,7 +12,7 @@ using namespace std;
 
 #define WIDTH 800       //가로
 #define HEIGHT 850      //세로
-#define BAR_COUNT 10    //발판 개수
+#define BAR_COUNT 8    //발판 개수
 
 int score = 0;  // 게임 스코어
 int level = 1;  // 게임 레벨
@@ -174,7 +174,7 @@ public:
     void LevelUp()     // 레벨업 (움직임 빨라지고, 점프 후 더 빨리 떨어짐)
     {
         speed += 0.05f;
-        GRAVITY += 0.04f;
+        GRAVITY += 0.02f;
     }
     void StopJump()     // 점프 멈추기
     {
@@ -222,7 +222,7 @@ public:
             vBar.push_back(p);
         }
 
-        vBar[0].y = HEIGHT - 200;   // 처음 발판 y좌표 설정
+        vBar[0].y = HEIGHT - 400;   // 처음 발판 y좌표 설정
     }
     ~Bar()  // 발판 소멸
     {
@@ -257,7 +257,7 @@ public:
                 && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + imgHeight) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표 + 10
             {
                 // 시간 지연
-                Sleep(40);
+                //Sleep(40);
                 pPlayer->Jump();
 
                 vBar[i].count++;
@@ -303,6 +303,23 @@ public:
 
 int main(void)
 {
+    
+    printf("\n\n\n\n             Gravity Frog Game\n");
+    printf("\n\n             엔터키를 입력하세요.");
+
+    char ch;
+    ch = getchar();
+
+    if (ch == 10)
+    {
+        printf("\n\n\n              __   __   _____     __\n");
+        printf("\n              |  | |  | |_   _|   /  |\n");
+        printf("\n              |  |_|  |   | |    |   |\n");
+        printf("\n              |   _   |   | |    |   |\n");
+        printf("\n              |  | |  |   | |    |__/\n");
+        printf("\n              |  | |  |  _| |_    __ \n");
+        printf("\n              |__| |__| |_____|  |__|\n");
+    }  
 
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "Frog Game");
     window.setFramerateLimit(60);
@@ -350,4 +367,5 @@ int main(void)
     delete(pPlayer);
 
     return 0;
+
 }

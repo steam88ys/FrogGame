@@ -38,17 +38,14 @@ private:
     bool jumpFlag;
     const Sprite& GetImg()
     {
-        //점프 시간이 0초 이상일 때
-        if (jumpFlag && duration<=0)      // true일 때 점프, false일 때 점프 준비 이미지
+        //점프 상태 0초 초과일 때
+        if (jumpFlag && duration>0)      // true일 때 점프, false일 때 점프 준비 이미지
         {
             return *imgJump;
         }
         else
         {
             return *imgReady;
-            // 지연시키는 코드
-            // 점프 상태가 a초 이상일 때
-            // 바닥에 돌아오면 a를 0으로 초기화
         }
     }
 
@@ -226,7 +223,7 @@ public:
             vBar.push_back(p);
         }
 
-        vBar[0].y = HEIGHT - 400;   // 처음 발판 y좌표 설정
+        vBar[0].y = HEIGHT - 200;   // 처음 발판 y좌표 설정
     }
     ~Bar()  // 발판 소멸
     {

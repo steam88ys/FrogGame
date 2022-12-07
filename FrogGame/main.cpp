@@ -18,6 +18,9 @@ int score = 0;  // 게임 스코어
 int level = 1;  // 게임 레벨
 float GRAVITY = 0.2f;    //중력
 
+clock_t start, finish;  // 측정할 시간 시작, 끝
+double duration;    // 측정한 시간
+
 
 //플래이어 클래스
 class Player
@@ -35,7 +38,8 @@ private:
     bool jumpFlag;
     const Sprite& GetImg()
     {
-        if (jumpFlag)      // true일 때 점프, false일 때 점프 준비 이미지
+        //점프 시간이 0초 이상일 때
+        if (jumpFlag && duration<=0)      // true일 때 점프, false일 때 점프 준비 이미지
         {
             return *imgJump;
         }
@@ -44,7 +48,7 @@ private:
             return *imgReady;
             // 지연시키는 코드
             // 점프 상태가 a초 이상일 때
-            // 바닥에 돌아면 a를 0으로 초기화
+            // 바닥에 돌아오면 a를 0으로 초기화
         }
     }
 
@@ -173,7 +177,7 @@ public:
     }
     void LevelUp()     // 레벨업 (움직임 빨라지고, 점프 후 더 빨리 떨어짐)
     {
-        speed += 0.05f;
+        speed += 0.06f;
         GRAVITY += 0.02f;
     }
     void StopJump()     // 점프 멈추기
@@ -240,13 +244,8 @@ public:
     }
 
     // 충돌 체크 후 점프 (착지, 스코어, 레벨 기능)
-    bool CheckCollision(Player* pPlayer)
+    void CheckCollision(Player* pPlayer)
     {
-        //null check
-        if (pPlayer == nullptr)
-        {
-            return false;
-        }
 
         for (int i = 0; i < BAR_COUNT; ++i)
         {                                   // 개구리가 점프하는 경우
@@ -256,9 +255,13 @@ public:
                 && pPlayer->GetY() + pPlayer->GetHeight() > vBar[i].y   // 개구리의 y좌표 + 현재 높이 > 발판 아래쪽 y좌표
                 && pPlayer->GetY() + pPlayer->GetHeight() < vBar[i].y + imgHeight) // 개구리의 y좌표 + 현재 높이 < 발판 위쪽 y좌표 + 10
             {
-                // 시간 지연
-                //Sleep(40);
+                
+                // 점프 시간 측정
+                start = clock();
                 pPlayer->Jump();
+                finish = clock();
+                duration = (double)(finish - start) / CLOCKS_PER_SEC;
+           
 
                 vBar[i].count++;
                 if (vBar[i].count == 1) {   // 같은 발판 밟았을 때
@@ -272,10 +275,8 @@ public:
                   }
                 }
                 
-                return true;
             }
         }
-        return false;
     }
 
     // 개구리가 점프 가능한 범위 지정
@@ -303,22 +304,24 @@ public:
 
 int main(void)
 {
+
+    system("mode con cols=80 lines=42");
     
-    printf("\n\n\n\n             Gravity Frog Game\n");
-    printf("\n\n             엔터키를 입력하세요.");
+    printf("\n\n\n\n                            Gravity Frog Game");
+    printf("\n\n\n\n                            엔터키를 입력하세요.");
 
     char ch;
     ch = getchar();
 
     if (ch == 10)
     {
-        printf("\n\n\n              __   __   _____     __\n");
-        printf("\n              |  | |  | |_   _|   /  |\n");
-        printf("\n              |  |_|  |   | |    |   |\n");
-        printf("\n              |   _   |   | |    |   |\n");
-        printf("\n              |  | |  |   | |    |__/\n");
-        printf("\n              |  | |  |  _| |_    __ \n");
-        printf("\n              |__| |__| |_____|  |__|\n");
+        printf("\n\n\n\n\n\n                           __   __   _____     __");
+        printf("\n                          |  | |  | |_   _|   /  |\n");
+        printf("\n                          |  |_|  |   | |    |   |\n");
+        printf("\n                          |   _   |   | |    |   |\n");
+        printf("\n                          |  | |  |   | |    |__/\n");
+        printf("\n                          |  | |  |  _| |_    __ \n");
+        printf("\n                          |__| |__| |_____|  |__|\n");
     }  
 
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "Frog Game");

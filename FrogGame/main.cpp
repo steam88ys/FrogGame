@@ -11,8 +11,8 @@ using namespace std;
 
 
 #define WIDTH 800       //가로
-#define HEIGHT 850      //세로
-#define BAR_COUNT 8    //발판 개수
+#define HEIGHT 830      //세로
+#define BAR_COUNT 9    //발판 개수
 
 int score = 0;  // 게임 스코어
 int level = 1;  // 게임 레벨
@@ -174,7 +174,7 @@ public:
     }
     void LevelUp()     // 레벨업 (움직임 빨라지고, 점프 후 더 빨리 떨어짐)
     {
-        speed += 0.06f;
+        speed += 0.05f;
         GRAVITY += 0.02f;
     }
     void StopJump()     // 점프 멈추기
@@ -223,7 +223,7 @@ public:
             vBar.push_back(p);
         }
 
-        vBar[0].y = HEIGHT - 200;   // 처음 발판 y좌표 설정
+        vBar[0].y = HEIGHT - 100;   // 처음 발판 y좌표 설정
     }
     ~Bar()  // 발판 소멸
     {
@@ -259,18 +259,19 @@ public:
                 finish = clock();
                 duration = (double)(finish - start) / CLOCKS_PER_SEC;
            
-
                 vBar[i].count++;
-                if (vBar[i].count == 1) {   // 같은 발판 밟았을 때
-                  score += 10;
+                if (vBar[i].count == 1) {   // 같은 발판 밟지 않았을 때
+                  score += 10;  // 점수 +10
 
-                  // 스코어 계산
-                  if (score != 0 && score % 50 == 0)
+                  if (score != 0 && score % 50 == 0)   // (50점 단위로 레벨업)
                   {
-                      level++;
-                      pPlayer->LevelUp();
+                      level++;              // 레벨 +1
+                      pPlayer->LevelUp();   // 레벨업 (좌우 움직임, 중력 변화)
                   }
+
                 }
+
+                
                 
             }
         }
@@ -302,24 +303,26 @@ public:
 int main(void)
 {
 
-    system("mode con cols=80 lines=42");
-    
-    printf("\n\n\n\n                            Gravity Frog Game");
-    printf("\n\n\n\n                            엔터키를 입력하세요.");
+    //인트로 화면
+    RenderWindow start(VideoMode(WIDTH, HEIGHT), "Frog Game"); //인트로 화면과 게임 실행 화면 크기가 다름
+    Texture cr;
+    cr.loadFromFile("images/start.jpg"); //이미지 띄우고
+    Sprite carracing(cr);
 
-    char ch;
-    ch = getchar();
+    while (start.isOpen()) {
+        Event event;
+        while (start.pollEvent(event))
+        {
+            if (Keyboard::isKeyPressed(Keyboard::Enter)) {
+                start.close();
+            } //Enter 누르면 이미지 닫기
+        }
+        start.clear();
+        start.draw(carracing);
+        start.display();
+    }
 
-    if (ch == 10)
-    {
-        printf("\n\n\n\n\n\n                           __   __   _____     __");
-        printf("\n                          |  | |  | |_   _|   /  |\n");
-        printf("\n                          |  |_|  |   | |    |   |\n");
-        printf("\n                          |   _   |   | |    |   |\n");
-        printf("\n                          |  | |  |   | |    |__/\n");
-        printf("\n                          |  | |  |  _| |_    __ \n");
-        printf("\n                          |__| |__| |_____|  |__|\n");
-    }  
+
 
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "Frog Game");
     window.setFramerateLimit(60);

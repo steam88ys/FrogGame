@@ -11,7 +11,7 @@ using namespace std;
 
 
 #define WIDTH 800       //가로
-#define HEIGHT 830      //세로
+#define HEIGHT 800      //세로
 #define BAR_COUNT 9    //발판 개수
 
 int score = 0;  // 게임 스코어
@@ -306,7 +306,7 @@ int main(void)
     //인트로 화면
     RenderWindow start(VideoMode(WIDTH, HEIGHT), "Frog Game"); //인트로 화면과 게임 실행 화면 크기가 다름
     Texture cr;
-    cr.loadFromFile("images/start.jpg"); //이미지 띄우고
+    cr.loadFromFile("images/start.png"); //이미지 띄우고
     Sprite carracing(cr);
 
     while (start.isOpen()) {

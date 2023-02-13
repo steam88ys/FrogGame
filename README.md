@@ -18,7 +18,7 @@ Visual Studio/C++
 <br>시작 화면
 --------------------
 
-![image](https://user-images.githubusercontent.com/82978463/206590807-f8d47118-7264-4322-91fa-1d189c9a22aa.png)
+![image](https://user-images.githubusercontent.com/82978463/218346684-c30685ec-df14-4b13-94b2-fbdc88d7adcc.png)
 
 
 
